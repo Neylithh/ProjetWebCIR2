@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Éditeur Pixel Art</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Pixel Art Creator</h1>
+    </header>
+
+    <main class="editor-container">
+        <aside class="toolbar">
+            <h2>Outils</h2>
+            <input type="color" id="color-picker" value="#000000">
+            <button id="tool-eraser">Gomme</button>
+            <button id="tool-pencil" class="active">Crayon</button>
+        </aside>
+
+        <section class="canvas-area">
+            <canvas id="pixel-canvas"></canvas>
+        </section>
+    </main>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
