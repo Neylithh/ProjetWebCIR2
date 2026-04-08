@@ -46,6 +46,26 @@ header {
     margin-bottom: 10px;
 }
 
+.control-group {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+.control-group span {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+.control-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
 .toolbar button {
     width: 100%;
     padding: 10px;
@@ -55,6 +75,10 @@ header {
     cursor: pointer;
     border-radius: 4px;
     transition: all 0.2s;
+}
+
+.toolbar button:last-child {
+    margin-bottom: 0;
 }
 
 .toolbar button.active {

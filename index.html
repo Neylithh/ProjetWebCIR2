@@ -16,6 +16,28 @@
         <aside class="toolbar">
             <h2>Outils</h2>
             <input type="color" id="color-picker" value="#000000">
+            <label class="control-group" for="grid-size">
+                <span>Taille de la grille</span>
+                <select id="grid-size">
+                    <option value="16">16 x 16</option>
+                    <option value="24">24 x 24</option>
+                    <option value="32" selected>32 x 32</option>
+                    <option value="48">48 x 48</option>
+                    <option value="64">64 x 64</option>
+                </select>
+            </label>
+            <label class="control-group" for="brush-size">
+                <span>Taille du trait / gomme</span>
+                <select id="brush-size">
+                    <option value="1" selected>1 case</option>
+                    <option value="2">2 cases</option>
+                    <option value="3">3 cases</option>
+                    <option value="4">4 cases</option>
+                    <option value="5">5 cases</option>
+                </select>
+            </label>
+            <button id="tool-fill">Sceau</button>
+            <button id="tool-eyedropper">Pipette</button>
             <button id="tool-eraser">Gomme</button>
             <button id="tool-pencil" class="active">Crayon</button>
         </aside>
