@@ -1,144 +1,147 @@
 // --- 1. CONFIGURATION ---
-const CANVAS_WIDTH = 480; 
-const CANVAS_HEIGHT = 480; 
+const TAILLE_PIXEL_AFFICHAGE = 15; // Chaque case fera toujours 15px de large à l'écran
+let tailleCanvasActuelle = 0;      // Sera calculé dynamiquement
 
 // --- 2. VARIABLES D'ÉTAT ---
-let currentColor = "#000000"; 
-let currentTool = "pencil";      
-let isDrawing = false;         
-let currentGridSize = 32;
-let currentBrushSize = 1;
+let couleurActuelle = "#000000"; 
+let outilActuel = "crayon";      
+let dessinEnCours = false;         
+let tailleGrilleActuelle = 32;
+let taillePinceauActuelle = 1;
 
 // --- 3. ÉLÉMENTS DU DOM ---
-const canvas = document.getElementById("pixel-canvas");
-const ctx = canvas.getContext("2d", { alpha: true }); 
+const monCanvas = document.getElementById("mon-canvas");
+const contexte = monCanvas.getContext("2d", { alpha: true }); 
 
-const colorPicker = document.getElementById("color-picker");
-const gridSizeSelect = document.getElementById("grid-size");
-const brushSizeSelect = document.getElementById("brush-size");
-const btnFill = document.getElementById("tool-fill");
-const btnEyedropper = document.getElementById("tool-eyedropper");
-const btnEraser = document.getElementById("tool-eraser");
-const btnPencil = document.getElementById("tool-pencil");
+const selecteurCouleur = document.getElementById("selecteur-couleur");
+const choixTailleGrille = document.getElementById("taille-grille");
+const choixTaillePinceau = document.getElementById("taille-pinceau");
+const boutonSceau = document.getElementById("outil-sceau");
+const boutonPipette = document.getElementById("outil-pipette");
+const boutonGomme = document.getElementById("outil-gomme");
+const boutonCrayon = document.getElementById("outil-crayon");
 
 // --- 4. INITIALISATION ---
-function initEditor() {
+function initialiserEditeur() {
+    // Calcul de la nouvelle taille d'affichage en fonction de la grille
+    tailleCanvasActuelle = tailleGrilleActuelle * TAILLE_PIXEL_AFFICHAGE;
+
     // Taille interne du canvas (le nombre de pixels réels)
-    canvas.width = currentGridSize;
-    canvas.height = currentGridSize;
+    monCanvas.width = tailleGrilleActuelle;
+    monCanvas.height = tailleGrilleActuelle;
 
     // Taille d'affichage (le zoom)
-    canvas.style.width = CANVAS_WIDTH + "px";
-    canvas.style.height = CANVAS_HEIGHT + "px";
+    monCanvas.style.width = tailleCanvasActuelle + "px";
+    monCanvas.style.height = tailleCanvasActuelle + "px";
 
     // Désactiver le lissage
-    ctx.imageSmoothingEnabled = false;
+    contexte.imageSmoothingEnabled = false;
 
-    // Mise à jour de la variable CSS pour l'échiquier et la grille
-    const pixelSize = CANVAS_WIDTH / currentGridSize;
-    document.documentElement.style.setProperty('--pixel-size', pixelSize + 'px');
+    // Mise à jour des variables CSS pour que la grille visuelle suive le mouvement
+    document.documentElement.style.setProperty('--taille-pixel', TAILLE_PIXEL_AFFICHAGE + 'px');
+    document.documentElement.style.setProperty('--taille-canvas', tailleCanvasActuelle + 'px');
 }
 
-function setActiveTool(toolName) {
-    currentTool = toolName;
-    btnPencil.classList.toggle("active", toolName === "pencil");
-    btnEraser.classList.toggle("active", toolName === "eraser");
-    btnFill.classList.toggle("active", toolName === "fill");
-    btnEyedropper.classList.toggle("active", toolName === "eyedropper");
+function definirOutilActif(nomOutil) {
+    outilActuel = nomOutil;
+    boutonCrayon.classList.toggle("actif", nomOutil === "crayon");
+    boutonGomme.classList.toggle("actif", nomOutil === "gomme");
+    boutonSceau.classList.toggle("actif", nomOutil === "sceau");
+    boutonPipette.classList.toggle("actif", nomOutil === "pipette");
 }
 
-function getCellFromEvent(e) {
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+function obtenirCaseClic(evenement) {
+    const rectangleCanvas = monCanvas.getBoundingClientRect();
+    const sourisX = evenement.clientX - rectangleCanvas.left;
+    const sourisY = evenement.clientY - rectangleCanvas.top;
 
     return {
-        x: Math.floor((mouseX / CANVAS_WIDTH) * currentGridSize),
-        y: Math.floor((mouseY / CANVAS_HEIGHT) * currentGridSize)
+        x: Math.floor((sourisX / tailleCanvasActuelle) * tailleGrilleActuelle),
+        y: Math.floor((sourisY / tailleCanvasActuelle) * tailleGrilleActuelle)
     };
 }
 
-function getPixelIndex(x, y) {
-    return (y * currentGridSize + x) * 4;
+function obtenirIndexPixel(x, y) {
+    return (y * tailleGrilleActuelle + x) * 4;
 }
 
-function isSameColor(data, index, targetColor) {
-    return data[index] === targetColor[0] &&
-        data[index + 1] === targetColor[1] &&
-        data[index + 2] === targetColor[2] &&
-        data[index + 3] === targetColor[3];
+function estMemeCouleur(donnees, index, couleurCible) {
+    return donnees[index] === couleurCible[0] &&
+           donnees[index + 1] === couleurCible[1] &&
+           donnees[index + 2] === couleurCible[2] &&
+           donnees[index + 3] === couleurCible[3];
 }
 
-function floodFill(startX, startY, fillColor) {
-    const imageData = ctx.getImageData(0, 0, currentGridSize, currentGridSize);
-    const data = imageData.data;
-    const startIndex = getPixelIndex(startX, startY);
-    const targetColor = [data[startIndex], data[startIndex + 1], data[startIndex + 2], data[startIndex + 3]];
-    const fillRgba = hexToRgba(fillColor);
+function remplirZone(departX, departY, couleurRemplissage) {
+    const donneesImage = contexte.getImageData(0, 0, tailleGrilleActuelle, tailleGrilleActuelle);
+    const donnees = donneesImage.data;
+    const indexDepart = obtenirIndexPixel(departX, departY);
+    const couleurCible = [donnees[indexDepart], donnees[indexDepart + 1], donnees[indexDepart + 2], donnees[indexDepart + 3]];
+    const remplissageRgba = hexVersRgba(couleurRemplissage);
 
-    if (isSameColor(data, startIndex, fillRgba)) {
-        return;
+    if (estMemeCouleur(donnees, indexDepart, remplissageRgba)) {
+        return; // On arrête si on clique sur une zone qui a déjà la bonne couleur
     }
 
-    const stack = [[startX, startY]];
+    const pile = [[departX, departY]];
 
-    while (stack.length > 0) {
-        const [x, y] = stack.pop();
+    while (pile.length > 0) {
+        const [x, y] = pile.pop();
 
-        if (x < 0 || x >= currentGridSize || y < 0 || y >= currentGridSize) {
+        if (x < 0 || x >= tailleGrilleActuelle || y < 0 || y >= tailleGrilleActuelle) {
             continue;
         }
 
-        const index = getPixelIndex(x, y);
+        const index = obtenirIndexPixel(x, y);
 
-        if (!isSameColor(data, index, targetColor)) {
+        if (!estMemeCouleur(donnees, index, couleurCible)) {
             continue;
         }
 
-        data[index] = fillRgba[0];
-        data[index + 1] = fillRgba[1];
-        data[index + 2] = fillRgba[2];
-        data[index + 3] = fillRgba[3];
+        donnees[index] = remplissageRgba[0];
+        donnees[index + 1] = remplissageRgba[1];
+        donnees[index + 2] = remplissageRgba[2];
+        donnees[index + 3] = remplissageRgba[3];
 
-        stack.push([x + 1, y]);
-        stack.push([x - 1, y]);
-        stack.push([x, y + 1]);
-        stack.push([x, y - 1]);
+        pile.push([x + 1, y]);
+        pile.push([x - 1, y]);
+        pile.push([x, y + 1]);
+        pile.push([x, y - 1]);
     }
 
-    ctx.putImageData(imageData, 0, 0);
+    contexte.putImageData(donneesImage, 0, 0);
 }
 
-function hexToRgba(hexColor) {
-    const normalized = hexColor.replace("#", "");
-    const red = parseInt(normalized.substring(0, 2), 16);
-    const green = parseInt(normalized.substring(2, 4), 16);
-    const blue = parseInt(normalized.substring(4, 6), 16);
+function hexVersRgba(couleurHex) {
+    const normalise = couleurHex.replace("#", "");
+    const rouge = parseInt(normalise.substring(0, 2), 16);
+    const vert = parseInt(normalise.substring(2, 4), 16);
+    const bleu = parseInt(normalise.substring(4, 6), 16);
 
-    return [red, green, blue, 255];
+    return [rouge, vert, bleu, 255];
 }
 
-function rgbaToHex(red, green, blue) {
-    return [red, green, blue]
-        .map((component) => component.toString(16).padStart(2, "0"))
+function rgbaVersHex(rouge, vert, bleu) {
+    return [rouge, vert, bleu]
+        .map((composant) => composant.toString(16).padStart(2, "0"))
         .join("");
 }
 
 // --- 5. LOGIQUE DE DESSIN ---
-function drawPixel(e) {
-    const { x: pixelX, y: pixelY } = getCellFromEvent(e);
+function dessinerPixel(evenement) {
+    const { x: pixelX, y: pixelY } = obtenirCaseClic(evenement);
 
-    if (pixelX >= 0 && pixelX < currentGridSize && pixelY >= 0 && pixelY < currentGridSize) {
-        const offset = Math.floor(currentBrushSize / 2);
+    if (pixelX >= 0 && pixelX < tailleGrilleActuelle && pixelY >= 0 && pixelY < tailleGrilleActuelle) {
+        const decalage = Math.floor(taillePinceauActuelle / 2);
 
-        for (let y = pixelY - offset; y < pixelY - offset + currentBrushSize; y++) {
-            for (let x = pixelX - offset; x < pixelX - offset + currentBrushSize; x++) {
-                if (x >= 0 && x < currentGridSize && y >= 0 && y < currentGridSize) {
-                    if (currentTool === "pencil") {
-                        ctx.fillStyle = currentColor;
-                        ctx.fillRect(x, y, 1, 1);
-                    } else if (currentTool === "eraser") {
-                        ctx.clearRect(x, y, 1, 1);
+        for (let y = pixelY - decalage; y < pixelY - decalage + taillePinceauActuelle; y++) {
+            for (let x = pixelX - decalage; x < pixelX - decalage + taillePinceauActuelle; x++) {
+                if (x >= 0 && x < tailleGrilleActuelle && y >= 0 && y < tailleGrilleActuelle) {
+                    if (outilActuel === "crayon") {
+                        contexte.fillStyle = couleurActuelle;
+                        contexte.fillRect(x, y, 1, 1);
+                    } else if (outilActuel === "gomme") {
+                        contexte.clearRect(x, y, 1, 1);
                     }
                 }
             }
@@ -146,84 +149,86 @@ function drawPixel(e) {
     }
 }
 
-function useEyedropper(e) {
-    const { x, y } = getCellFromEvent(e);
+function utiliserPipette(evenement) {
+    const { x, y } = obtenirCaseClic(evenement);
 
-    if (x < 0 || x >= currentGridSize || y < 0 || y >= currentGridSize) {
+    if (x < 0 || x >= tailleGrilleActuelle || y < 0 || y >= tailleGrilleActuelle) {
         return;
     }
 
-    const imageData = ctx.getImageData(x, y, 1, 1).data;
+    const pixelVise = contexte.getImageData(x, y, 1, 1).data;
 
-    if (imageData[3] === 0) {
+    // Si le pixel est transparent (alpha = 0), on ne fait rien
+    if (pixelVise[3] === 0) {
         return;
     }
 
-    currentColor = `#${rgbaToHex(imageData[0], imageData[1], imageData[2])}`;
-    colorPicker.value = currentColor;
-    setActiveTool("pencil");
+    couleurActuelle = `#${rgbaVersHex(pixelVise[0], pixelVise[1], pixelVise[2])}`;
+    selecteurCouleur.value = couleurActuelle;
+    definirOutilActif("crayon"); // Repasse au crayon après avoir pris la couleur
 }
 
-function handleCanvasAction(e) {
-    if (currentTool === "eyedropper") {
-        useEyedropper(e);
+function gererActionCanvas(evenement) {
+    if (outilActuel === "pipette") {
+        utiliserPipette(evenement);
         return;
     }
 
-    if (currentTool === "fill") {
-        const { x, y } = getCellFromEvent(e);
-        if (x >= 0 && x < currentGridSize && y >= 0 && y < currentGridSize) {
-            floodFill(x, y, currentColor);
+    if (outilActuel === "sceau") {
+        const { x, y } = obtenirCaseClic(evenement);
+        if (x >= 0 && x < tailleGrilleActuelle && y >= 0 && y < tailleGrilleActuelle) {
+            remplirZone(x, y, couleurActuelle);
         }
         return;
     }
 
-    isDrawing = true;
-    drawPixel(e);
+    // Sinon c'est crayon ou gomme
+    dessinEnCours = true;
+    dessinerPixel(evenement);
 }
 
 // --- 6. ÉVÉNEMENTS ---
-colorPicker.addEventListener("input", (e) => {
-    currentColor = e.target.value;
-    setActiveTool("pencil");
+selecteurCouleur.addEventListener("input", (evenement) => {
+    couleurActuelle = evenement.target.value;
+    definirOutilActif("crayon");
 });
 
-gridSizeSelect.addEventListener("change", (e) => {
-    currentGridSize = parseInt(e.target.value, 10);
-    initEditor();
+choixTailleGrille.addEventListener("change", (evenement) => {
+    tailleGrilleActuelle = parseInt(evenement.target.value, 10);
+    initialiserEditeur();
 });
 
-brushSizeSelect.addEventListener("change", (e) => {
-    currentBrushSize = parseInt(e.target.value, 10);
+choixTaillePinceau.addEventListener("change", (evenement) => {
+    taillePinceauActuelle = parseInt(evenement.target.value, 10);
 });
 
-btnPencil.addEventListener("click", () => {
-    setActiveTool("pencil");
+boutonCrayon.addEventListener("click", () => {
+    definirOutilActif("crayon");
 });
 
-btnEraser.addEventListener("click", () => {
-    setActiveTool("eraser");
+boutonGomme.addEventListener("click", () => {
+    definirOutilActif("gomme");
 });
 
-btnFill.addEventListener("click", () => {
-    setActiveTool("fill");
+boutonSceau.addEventListener("click", () => {
+    definirOutilActif("sceau");
 });
 
-btnEyedropper.addEventListener("click", () => {
-    setActiveTool("eyedropper");
+boutonPipette.addEventListener("click", () => {
+    definirOutilActif("pipette");
 });
 
-canvas.addEventListener("mousedown", (e) => {
-    handleCanvasAction(e);
+monCanvas.addEventListener("mousedown", (evenement) => {
+    gererActionCanvas(evenement);
 });
 
-canvas.addEventListener("mousemove", (e) => {
-    if (isDrawing) drawPixel(e);
+monCanvas.addEventListener("mousemove", (evenement) => {
+    if (dessinEnCours) dessinerPixel(evenement);
 });
 
 window.addEventListener("mouseup", () => {
-    isDrawing = false;
+    dessinEnCours = false;
 });
 
 // Lancement au chargement
-initEditor();
+initialiserEditeur();
