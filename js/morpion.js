@@ -50,6 +50,8 @@ function handleCellClick(clickedCellEvent) {
     checkResult();
 
     if (gameActive) {
+        currentPlayer = "O"; 
+        statusDisplay.innerHTML = messages.aiTurn();
         setTimeout(handleAIMove, 700); // L'IA joue après un court délai
     }
 }
@@ -66,7 +68,6 @@ function handleAIMove() {
         return;
     }
 
-    statusDisplay.innerHTML = messages.aiTurn();
     let availableCells = [];
     for (let i = 0; i < gameState.length; i++) {
         if (gameState[i] === "") {
@@ -74,20 +75,72 @@ function handleAIMove() {
         }
     }
 
-    if (availableCells.length > 0) {
-        const randomIndex = Math.floor(Math.random() * availableCells.length);
-        const cellToPlayIndex = availableCells[randomIndex];
-        
-        gameState[cellToPlayIndex] = "O"; // L'IA joue 'O'
-        cells[cellToPlayIndex].innerHTML = "O";
-        cells[cellToPlayIndex].classList.add('playerO'); // Style pour l'IA (O)
-        cells[cellToPlayIndex].removeEventListener('click', handleCellClick); // Empêche de cliquer sur la case de l'IA
+    if (availableCells.length === 0) {
+        return;
+    }
 
-        checkResult();
-        if (gameActive) {
-            currentPlayer = "X"; // Repasse au joueur humain après le tour de l'IA
-            statusDisplay.innerHTML = messages.playerTurn();
+    let aiMove = null;
+
+    const findWinningMove = (player) => {
+        for (let i = 0; i < winningConditions.length; i++) {
+            const [a, b, c] = winningConditions[i];
+            const line = [gameState[a], gameState[b], gameState[c]];
+            
+            if (line.filter(cell => cell === player).length === 2 && line.includes("")) {
+                const emptyCellIndex = [a, b, c].find(index => gameState[index] === "");
+                if (emptyCellIndex !== undefined) {
+                    return emptyCellIndex;
+                }
+            }
         }
+        return null;
+    };
+
+    aiMove = findWinningMove("O");
+    if (aiMove !== null) {
+        makeAIMove(aiMove);
+        return;
+    }
+
+    aiMove = findWinningMove("X");
+    if (aiMove !== null) {
+        makeAIMove(aiMove);
+        return;
+    }
+
+    if (gameState[4] === "") {
+        makeAIMove(4);
+        return;
+    }
+
+    const corners = [0, 2, 6, 8].filter(index => gameState[index] === "");
+    if (corners.length > 0) {
+        aiMove = corners[Math.floor(Math.random() * corners.length)];
+        makeAIMove(aiMove);
+        return;
+    }
+
+    const sides = [1, 3, 5, 7].filter(index => gameState[index] === "");
+    if (sides.length > 0) {
+        aiMove = sides[Math.floor(Math.random() * sides.length)];
+        makeAIMove(aiMove);
+        return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * availableCells.length);
+    makeAIMove(availableCells[randomIndex]);
+}
+
+function makeAIMove(index) {
+    gameState[index] = "O";
+    cells[index].innerHTML = "O";
+    cells[index].classList.add('playerO');
+    cells[index].removeEventListener('click', handleCellClick);
+
+    checkResult();
+    if (gameActive) {
+        currentPlayer = "X"; // Repasse au joueur humain après le tour de l'IA
+        statusDisplay.innerHTML = messages.playerTurn();
     }
 }
 
