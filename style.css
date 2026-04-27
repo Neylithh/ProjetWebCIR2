@@ -1,19 +1,20 @@
 :root {
-    /* Valeurs écrasées par le JS */
+    /* Variables globales  */
     --taille-pixel: 15px; 
     --taille-canvas: 480px; 
     
-    /* Palette de couleurs du thème */
+    /* Couleurs utilisées pour le jeu */
     --fond-principal: #121212;
     --fond-surface: #1e1e24;
     --fond-element: #2b2b36;
-    --couleur-accent: #6366f1; /* Indigo moderne */
+    --couleur-accent: #6366f1;
     --texte-principal: #f3f4f6;
     --texte-secondaire: #9ca3af;
     --arrondi-bordure: 12px;
 }
 
 body {
+    /* Mise en page globale du jeu */
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     background-color: var(--fond-principal);
     color: var(--texte-principal);
@@ -25,6 +26,7 @@ body {
 }
 
 header {
+    /* Style de l'en-tête */
     background-color: var(--fond-surface);
     text-align: center;
     padding: 1rem;
@@ -51,7 +53,7 @@ header h1 {
     flex: 1;
 }
 
-/* --- BARRE D'OUTILS --- */
+/* --- Barre d'outils --- */
 .barre-outils {
     background-color: var(--fond-surface);
     padding: 24px;
@@ -70,8 +72,7 @@ header h1 {
     text-transform: uppercase;
     letter-spacing: 1px;
 }
-
-/* Sélecteur de couleur stylisé */
+/* Sélecteur de couleur */
 .barre-outils input[type="color"] {
     width: 100%;
     height: 50px;
@@ -92,7 +93,7 @@ header h1 {
     border-radius: 8px;
 }
 
-/* Groupes de contrôles (Selects) */
+/* Contrôles */
 .groupe-controle {
     display: block;
     margin-bottom: 20px;
@@ -123,7 +124,7 @@ header h1 {
     border-color: var(--couleur-accent);
 }
 
-/* --- GRILLE D'OUTILS --- */
+/* --- Grille d'outils --- */
 .outils-grille {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -142,7 +143,6 @@ header h1 {
     justify-content: center;
     align-items: center;
 }
-
 .outils-grille button img {
     width: 32px !important;
     height: 32px !important;
@@ -165,8 +165,9 @@ header h1 {
     box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
 }
 
-/* --- ZONE DU CANVAS --- */
+/* --- Zone du canvas --- */
 .zone-canvas {
+    /* Conteneur du canvas */
     background-color: var(--fond-surface);
     padding: 20px;
     border-radius: var(--arrondi-bordure);
@@ -183,8 +184,6 @@ header h1 {
     display: block;
     border-radius: 4px;
     box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-
-    /* ÉCHIQUIER DYNAMIQUE PROPRE */
     background-color: #fff;
     background-image: conic-gradient(
         #e5e7eb 90deg, 
@@ -196,7 +195,7 @@ header h1 {
     background-position: 0 0;
 }
 
-/* GRILLE VISUELLE DYNAMIQUE */
+/*Grille visuelle dynamique */
 .zone-canvas::after {
     content: "";
     position: absolute;
@@ -210,9 +209,9 @@ header h1 {
         linear-gradient(to bottom, rgba(0,0,0,0.15) 1px, transparent 1px);
     background-size: var(--taille-pixel) var(--taille-pixel); 
 }
-
-/* NAVIGATION MENU */
+/* Navigation menu */
 .main-nav {
+    /* Barre de navigation entre les pages */
     background-color: var(--fond-element);
     padding: 0.8rem 0;
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
@@ -244,7 +243,7 @@ header h1 {
     color: #ffffff;
 }
 
-/* MORPION GAME STYLES */
+/* Style du morpion */
 .morpion-container {
     display: flex;
     flex-direction: column;
@@ -265,7 +264,6 @@ header h1 {
     box-shadow: 0 8px 30px rgba(0,0,0,0.5);
     margin-bottom: 20px;
 }
-
 .cell {
     width: 100px;
     height: 100px;
