@@ -1,11 +1,13 @@
+// Variables pour gérer l'interface et l'état du jeu
 const cells = document.querySelectorAll('.cell');
 const statusDisplay = document.getElementById('game-status');
 const restartButton = document.getElementById('restart-button');
 
 let gameActive = true;
-let currentPlayer = "X"; // Joueur humain
-let gameState = ["", "", "", "", "", "", "", "", ""]; // Représente les 9 cellules
+let currentPlayer = "X";
+let gameState = ["", "", "", "", "", "", "", "", ""];
 
+// Les combinaisons gagnantes (3 en ligne, colonne ou diagonale)
 const winningConditions = [
     [0, 1, 2],
     [3, 4, 5],
@@ -17,6 +19,7 @@ const winningConditions = [
     [2, 4, 6]
 ];
 
+// Messages affichés au joueur selon la situation
 const messages = {
     playerTurn: () => `C'est au tour de ${currentPlayer}`,
     winningPlayer: () => `Le joueur ${currentPlayer} a gagné !`,
@@ -24,7 +27,7 @@ const messages = {
     aiTurn: () => `C'est au tour de l'IA (O)`
 };
 
-// Fonctions d'initialisation et de mise à jour
+// Prépare le plateau pour une nouvelle partie
 function initializeGame() {
     gameActive = true;
     currentPlayer = "X";
@@ -33,11 +36,11 @@ function initializeGame() {
     cells.forEach(cell => {
         cell.innerHTML = "";
         cell.classList.remove('playerX', 'playerO');
-        cell.addEventListener('click', handleCellClick, { once: true }); // Écouteur d'événement pour le clic de l'utilisateur
+        cell.addEventListener('click', handleCellClick, { once: true });
     });
 }
 
-// Gestion du clic sur une cellule
+// Quand le joueur clique sur une case
 function handleCellClick(clickedCellEvent) {
     const clickedCell = clickedCellEvent.target;
     const clickedCellIndex = parseInt(clickedCell.getAttribute('data-cell-index'));
@@ -46,28 +49,32 @@ function handleCellClick(clickedCellEvent) {
         return;
     }
 
+    // Le joueur joue son coup
     handlePlayerMove(clickedCell, clickedCellIndex);
     checkResult();
 
+    // Puis c'est le tour de l'IA
     if (gameActive) {
         currentPlayer = "O"; 
         statusDisplay.innerHTML = messages.aiTurn();
-        setTimeout(handleAIMove, 700); // L'IA joue après un court délai
+        setTimeout(handleAIMove, 700);
     }
 }
 
+// Place le X du joueur et met à jour la case
 function handlePlayerMove(clickedCell, clickedCellIndex) {
     gameState[clickedCellIndex] = currentPlayer;
     clickedCell.innerHTML = currentPlayer;
-    clickedCell.classList.add('playerX'); // Style pour le joueur X
+    clickedCell.classList.add('playerX');
 }
 
-// Logique de l'IA (aléatoire)
+// L'IA détermine son meilleur coup
 function handleAIMove() {
     if (!gameActive) {
         return;
     }
 
+    // On cherche les cases vides disponibles
     let availableCells = [];
     for (let i = 0; i < gameState.length; i++) {
         if (gameState[i] === "") {
@@ -81,6 +88,7 @@ function handleAIMove() {
 
     let aiMove = null;
 
+    // Petite fonction pour chercher si l'IA peut gagner
     const findWinningMove = (player) => {
         for (let i = 0; i < winningConditions.length; i++) {
             const [a, b, c] = winningConditions[i];
@@ -96,23 +104,27 @@ function handleAIMove() {
         return null;
     };
 
+    // 1. L'IA essaie de gagner
     aiMove = findWinningMove("O");
     if (aiMove !== null) {
         makeAIMove(aiMove);
         return;
     }
 
+    // 2. Sinon, l'IA bloque le joueur pour l'empêcher de gagner
     aiMove = findWinningMove("X");
     if (aiMove !== null) {
         makeAIMove(aiMove);
         return;
     }
 
+    // 3. Si possible, l'IA prend le centre
     if (gameState[4] === "") {
         makeAIMove(4);
         return;
     }
 
+    // 4. L'IA prend un coin si disponible
     const corners = [0, 2, 6, 8].filter(index => gameState[index] === "");
     if (corners.length > 0) {
         aiMove = corners[Math.floor(Math.random() * corners.length)];
@@ -120,6 +132,7 @@ function handleAIMove() {
         return;
     }
 
+    // 5. Sinon un côté
     const sides = [1, 3, 5, 7].filter(index => gameState[index] === "");
     if (sides.length > 0) {
         aiMove = sides[Math.floor(Math.random() * sides.length)];
@@ -127,10 +140,12 @@ function handleAIMove() {
         return;
     }
 
+    // 6. Sinon une case aléatoire
     const randomIndex = Math.floor(Math.random() * availableCells.length);
     makeAIMove(availableCells[randomIndex]);
 }
 
+// Effectue le coup de l'IA et met à jour l'affichage
 function makeAIMove(index) {
     gameState[index] = "O";
     cells[index].innerHTML = "O";
@@ -139,14 +154,14 @@ function makeAIMove(index) {
 
     checkResult();
     if (gameActive) {
-        currentPlayer = "X"; // Repasse au joueur humain après le tour de l'IA
+        currentPlayer = "X";
         statusDisplay.innerHTML = messages.playerTurn();
     }
 }
 
-
-// Vérification du résultat du jeu
+// Vérifie si quelqu'un a gagné ou si c'est un match nul
 function checkResult() {
+    // Vérifie s'il y a un gagnant?
     let roundWon = false;
     for (let i = 0; i < winningConditions.length; i++) {
         const winCondition = winningConditions[i];
@@ -168,6 +183,7 @@ function checkResult() {
         return;
     }
 
+    // Vérifie si le plateau est plein
     let roundDraw = !gameState.includes("");
     if (roundDraw) {
         statusDisplay.innerHTML = messages.draw();
@@ -177,11 +193,11 @@ function checkResult() {
 
 }
 
-// Gestion du bouton Recommencer
+// Recommence une nouvelle partie
 function handleRestartGame() {
     initializeGame();
 }
 
-// Écouteurs d'événements
 restartButton.addEventListener('click', handleRestartGame);
-initializeGame(); // Initialise le jeu au chargement de la page
+// Lancer le jeu au chargement
+initializeGame();
