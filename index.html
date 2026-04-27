@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <!-- Head de la page -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Créateur de Pixel Art</title>
@@ -8,6 +9,7 @@
 </head>
 <body>
 
+    <!-- En-tête avec la navigation entre les pages morpion et pixel art -->
     <header>
         <nav class="main-nav">
             <ul>
@@ -18,11 +20,13 @@
         <h1>Créateur de Pixel Art</h1>
     </header>
 
+    <!-- Zone principale incluant la barre d'outils et la grille de dessin -->
     <main class="conteneur-editeur">
         <aside class="barre-outils">
             <h2>Outils</h2>
             <input type="color" id="selecteur-couleur" value="#000000">
             
+            <!-- Zone de sélection des outils de dessi (crayon, gomme,etc) -->
             <div class="outils-grille">
                 <button id="outil-crayon" class="actif" title="Crayon">
                     <img src="image/crayon.png" alt="Crayon">
@@ -37,7 +41,7 @@
                     <img src="image/pipette.png" alt="Pipette">
                 </button>
             </div>
-
+            <!-- Contrôles pour régler la taille de la grille et du pinceau -->
             <label class="groupe-controle" for="taille-grille">
                 <span>Taille de la grille</span>
                 <select id="taille-grille">
@@ -65,6 +69,8 @@
         </section>
     </main>
 
+    <!-- Chargement du script JavaScript qui gère le dessin et les interactions -->
     <script src="js/script.js"></script>
 </body>
 </html>
+            
